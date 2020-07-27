@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/Scenes/Main.unity
+    guid: bb39323eda651834fab058c9af91e524
+  - enabled: 1
+    path: Assets/Scenes/ReloadBuffer.unity
+    guid: 189eb9a44453224479ebcaecca5c505f
+  - enabled: 1
+    path: Assets/Scenes/Demo.unity
+    guid: 10ee3c59bb929db49a55a7478063f885
+  - enabled: 1
+    path: Assets/Scenes/Lab1.unity
+    guid: a6e9dbc00a763f0479fa840c8194081b
+  - enabled: 1
+    path: Assets/Scenes/Lab2Jupyter.unity
+    guid: 31fa1e69ddc241f42970daef586a46a2
+  - enabled: 1
+    path: Assets/Scenes/RealTrial.unity
+    guid: f6c9fdba3421a6449ad73cc2076e70d7
+  - enabled: 1
+    path: Assets/Scenes/Lab2B.unity
+    guid: 3cfcfea6ce6da6745b52c8ca6d5878ff
+  - enabled: 1
+    path: Assets/Scenes/Lab3Jupyter.unity
+    guid: d8d1a2354cb284941b999e0c299d853a
+  - enabled: 1
+    path: Assets/Scenes/Lab3A.unity
+    guid: bdc04e137ca700143862e3c1e6f7d5ad
+  - enabled: 1
+    path: Assets/Scenes/Lab3B.unity
+    guid: 02787bd0d5a39fe4a9af517791797a95
+  - enabled: 1
+    path: Assets/Scenes/Lab3C.unity
+    guid: 54ab88a43a4717e45abcb27d77a75591
+  - enabled: 1
+    path: Assets/Scenes/Lab4A.unity
+    guid: b7f292a9490f60d499d2f260aada3b71
+  - enabled: 1
+    path: Assets/Scenes/Phase1Easy.unity
+    guid: 22c7f8ad16cf0e74eb355819a1ef6c79
+  - enabled: 1
+    path: Assets/Scenes/Phase1Hard.unity
+    guid: bcf246b186421d14cb1aa25b9a51aa90
+  - enabled: 1
+    path: Assets/Scenes/Lab5B.unity
+    guid: 6afb13d8bf6d33a47947b9e96d5851d0
+  - enabled: 1
+    path: Assets/Scenes/Lab6B.unity
+    guid: 61428b9256688c54b8ed1a256d7347bc
+  m_configObjects: {}
