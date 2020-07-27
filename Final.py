@@ -50,13 +50,15 @@ RED = ((0, 255, 255), (10, 255, 255))
 GREEN = ((50, 255, 255), (70, 255, 255))
 PURPLE = ((130,255,255), (140,255,255))
 ORANGE = ((10,255,255), (20,255,255))
+YELLOW = ((20,255,255), (40,255,255))
+
 # >> Variables
 speed = 0.0  # The current speed of the car
 angle = 0.0  # The current angle of the car's wheels
 contour_center = None  # The (pixel row, pixel column) of contour
 contour_area = 0  # The area of contour
 
-PRIORITY = ["B", "G", "R"]
+PRIORITY = ["R", "Y", "G"]
 
 LEFT_POINT = (rc.camera.get_height() // 2, int(rc.camera.get_width() * 1 / 4))
 RIGHT_POINT = (rc.camera.get_height() // 2, int(rc.camera.get_width() * 3 / 4))
@@ -151,6 +153,11 @@ def checkOrange(image):
     contours = rc_utils.find_contours(image, ORANGE[0], ORANGE[1])
     contour = rc_utils.get_largest_contour(contours, MIN_CONTOUR_AREA)
     return contour
+def checkYellow(image):
+    global YELLOW
+    contours = rc_utils.find_contours(image, YELLOW[0], YELLOW[1])
+    contour = rc_utils.get_largest_contour(contours, MIN_CONTOUR_AREA)
+    return contour
 
 
 def update():
@@ -200,7 +207,7 @@ def update():
                 # Draw contour onto the image
                 rc_utils.draw_contour(image, contour)
                 rc_utils.draw_circle(image, contour_center)
-
+#change
             else:
                 contour_center = None
                 contour_area = 0
@@ -214,6 +221,8 @@ def update():
         print("cone slaloming")
 
 
+
+
     ###### Wall Parking State ######
     elif cur_state == State.wall_parking:
         print("Wall Parking")
@@ -223,28 +232,30 @@ def update():
         left_dist = rc_utils.get_pixel_average_distance(depth_image, LEFT_POINT, KERNEL_SIZE)
         right_dist = rc_utils.get_pixel_average_distance(depth_image, RIGHT_POINT, KERNEL_SIZE)
         
+        print("distance", center_dist)
+
         # Get difference between left and right distances
         dist_dif = left_dist - right_dist
+        print("dist_dif", dist_dif)
 
         # Remap angle
         angle = rc_utils.remap_range(dist_dif, -MAX_DIST_DIF, MAX_DIST_DIF, -1, 1, True)
         
-        '''
-        if dist_dif > 0
-            #turn left
-
-        elif dist_dif < 0 
-            #turn right
-        '''
-
-        if abs(dist_dif) > 10:
+        if abs(dist_dif) > 1:
+            print("entered")
             angle = rc_utils.remap_range(dist_dif, -MAX_DIST_DIF, MAX_DIST_DIF, -1, 1, True)
-            speed = rc_utils.remap_range(center_dist, 20, 10, 0.5, 0)
-            speed = rc_utils.clamp(0.5, 0)
+            if center_dist > 20:
+                speed = 0.5
+            elif center_dist < 21 and center_dist > 10:
+                speed = rc_utils.remap_range(center_dist, 20, 10, 0.5, 0)
+                speed = rc_utils.clamp(speed, 0, 0.5)
+            else:
+                speed = 0
+            print("speed", speed)
             rc.drive.set_speed_angle(speed, angle)
         else:
-            # stop moving            
-            rc.stop()
+            # stop moving             
+            rc.drive.stop()
 
         
     
@@ -254,5 +265,5 @@ def update():
 ########################################################################################
 
 if __name__ == "__main__":
-    rc.set_start_update(start, update, update_slow)
+    rc.set_start_update(start, update)
     rc.go()
