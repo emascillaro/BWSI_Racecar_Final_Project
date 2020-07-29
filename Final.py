@@ -43,7 +43,7 @@ MAX_DIST_DIF = 30
 CROP_FLOOR = ((360, 0), (rc.camera.get_height(), rc.camera.get_width()))
 
 # Colors, stored as a pair (hsv_min, hsv_max)
-#BLUE = ((90, 50, 50), (120, 255, 255))  # The HSV range for the color blue
+# BLUE = ((90, 50, 50), (120, 255, 255))  # The HSV range for the color blue
 # TODO (challenge 1): add HSV ranges for other colors
 BLUE = ((90, 255, 255), (120, 255, 255))  # The HSV range for the color blue
 RED = ((0, 255, 255), (10, 255, 255))
