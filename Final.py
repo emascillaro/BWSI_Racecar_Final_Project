@@ -358,7 +358,7 @@ def update():
             rc.drive.stop()
     print("angle", angle)
     print("speed", speed)
-    rc.drive.set_speed_angle(0.5, angle)
+    rc.drive.set_speed_angle(0.6, angle)
 
 CROP_TOP_HALF = ((0,0), (rc.camera.get_height() //2, rc.camera.get_width()))
 def find_cones():
