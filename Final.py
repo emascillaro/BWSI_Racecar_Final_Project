@@ -276,7 +276,9 @@ def update():
         else:
             # stop moving             
             rc.drive.stop()
-    rc.drive.set_speed_angle(0.2, angle)
+    print("angle", angle)
+    print("speed", speed)
+    rc.drive.set_speed_angle(0.5, angle)
         
     
     
