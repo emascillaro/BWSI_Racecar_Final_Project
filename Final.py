@@ -52,13 +52,20 @@ PURPLE = ((130,255,255), (140,255,255))
 ORANGE = ((10,255,255), (20,255,255))
 YELLOW = ((20,255,255), (40,255,255))
 
+## Realsene Camera ##
+NEON_GREEN_CONE = ((40, 100, 100),(70, 255, 255))
+NEON_ORANGE_CONE = ((150, 90, 90),(179, 255, 255))
+RED_TAPE = ((150, 90, 90),(179, 255, 255))
+YELLOW_TAPE = ((10, 90, 90),(40, 255, 255))
+GREEN_TAPE = ((60, 60, 60),(80, 255, 255))
+
 # >> Variables
 speed = 0.0  # The current speed of the car
 angle = 0.0  # The current angle of the car's wheels
 contour_center = None  # The (pixel row, pixel column) of contour
 contour_area = 0  # The area of contour
 
-PRIORITY = ["R", "Y", "G"]
+PRIORITY = ["G", "R", "Y"]
 
 LEFT_POINT = (rc.camera.get_height() // 2, int(rc.camera.get_width() * 1 / 4))
 RIGHT_POINT = (rc.camera.get_height() // 2, int(rc.camera.get_width() * 3 / 4))
@@ -121,11 +128,13 @@ def start():
     global speed
     global angle
     global cur_state
+    global prevangle
 
-    cur_state = State.wall_parking
+    cur_state = State.line_following
     # Initialize variables
     speed = 0
     angle = 0
+    prevangle = 0
 
     # Set initial driving speed and angle
     rc.drive.set_speed_angle(speed, angle)
@@ -144,18 +153,19 @@ def checkBlue(image):
 
 def checkGreen(image):
     global GREEN
-    contours = rc_utils.find_contours(image, GREEN[0], GREEN[1])
+    contours = rc_utils.find_contours(image, NEON_GREEN_CONE[0], NEON_GREEN_CONE[1])
     contour = rc_utils.get_largest_contour(contours, MIN_CONTOUR_AREA)
     return contour
 
 def checkOrange(image):
     global ORANGE
-    contours = rc_utils.find_contours(image, ORANGE[0], ORANGE[1])
+    contours = rc_utils.find_contours(image, NEON_ORANGE_CONE[0], NEON_ORANGE_CONE[1])
     contour = rc_utils.get_largest_contour(contours, MIN_CONTOUR_AREA)
     return contour
+
 def checkYellow(image):
     global YELLOW
-    contours = rc_utils.find_contours(image, YELLOW[0], YELLOW[1])
+    contours = rc_utils.find_contours(image, YELLOW_TAPE[0], YELLOW_TAPE[1])
     contour = rc_utils.get_largest_contour(contours, MIN_CONTOUR_AREA)
     return contour
 
@@ -169,7 +179,7 @@ def update():
     global angle
     global cur_state
     global PRIORITY
-
+    global prevangle
     # Get all images
     image = rc.camera.get_color_image()
     depth_image = rc.camera.get_depth_image()
@@ -188,16 +198,21 @@ def update():
             red = checkRed(image)
             green = checkGreen(image)
             blue = checkBlue(image)
-
+            yellow = checkYellow(image)
+            
             for priority in PRIORITY:
-                if priority == "R" and red is not None:
+                if priority == "Y" and yellow is not None:
+                    colorContours.append(yellow)
+                elif priority == "R" and red is not None:
                     colorContours.append(red)
                 elif priority == "G" and green is not None:
                     colorContours.append(green)
-                elif priority == "B" and blue is not None:
-                    colorContours.append(blue)
-
-            contour = colorContours[0]
+            
+            if not colorContours:
+                angle = prevangle
+                contour = None
+            else:
+                contour = colorContours[0]
             
             if contour is not None:
                 # Calculate contour information
@@ -211,15 +226,20 @@ def update():
             else:
                 contour_center = None
                 contour_area = 0
+                
+            if contour_center is not None:
+                angle = rc_utils.remap_range(contour_center[1], 0, rc.camera.get_width(), -1, 1, True)
+                angle = rc_utils.clamp(angle, -1,1)
+                prevangle = angle
 
             # Display the image to the screen
             rc.display.show_color_image(image)
 
 
-    ###### Cone Slaloming State ######
+    ##### Cone Slaloming State ######
     elif cur_state == State.cone_slaloming:
         print("cone slaloming")
-
+    
 
 
 
@@ -256,7 +276,9 @@ def update():
         else:
             # stop moving             
             rc.drive.stop()
-
+    print("angle", angle)
+    print("speed", speed)
+    rc.drive.set_speed_angle(0.5, angle)
         
     
     
