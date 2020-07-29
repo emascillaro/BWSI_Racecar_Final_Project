@@ -2,7 +2,6 @@
 Copyright MIT and Harvey Mudd College
 MIT License
 Summer 2020
-
 Final Project
 """
 
@@ -92,14 +91,14 @@ MAX_DIST_DIF = 30
 CROP_FLOOR = ((360, 0), (rc.camera.get_height(), rc.camera.get_width()))
 
 # Colors, stored as a pair (hsv_min, hsv_max)
-#BLUE = ((90, 50, 50), (120, 255, 255))  # The HSV range for the color blue
+# BLUE = ((90, 50, 50), (120, 255, 255))  # The HSV range for the color blue
 # TODO (challenge 1): add HSV ranges for other colors
 #BLUE = ((90, 255, 255), (120, 255, 255))  # The HSV range for the color blue
-RED = ((0, 255, 255), (10, 255, 255))
+RED = ((175, 100, 100), (5, 255, 255)) 
 BLUE = ((90, 100, 100), (120, 255, 255))    # The HSV range for the color blue
 GREEN = ((40, 100, 100), (70, 255, 255))
 PURPLE = ((130,255,255), (140,255,255))
-ORANGE = ((10,255,255), (20,255,255))
+ORANGE = ((10,100,100), (20,255,255))
 YELLOW = ((20,255,255), (40,255,255))
 
 ## Realsene Camera ##
@@ -118,7 +117,7 @@ contour_area = 0  # The area of contour
 counter = 0
 count = 0
 
-PRIORITY = ["G", "R", "Y"]
+PRIORITY = ["R", "Y", "G"]
 
 LEFT_POINT = (rc.camera.get_height() // 2, int(rc.camera.get_width() * 1 / 4))
 RIGHT_POINT = (rc.camera.get_height() // 2, int(rc.camera.get_width() * 3 / 4))
@@ -250,7 +249,6 @@ def update():
             if ids[idx] < id:
                 id = ids[idx]
                 index = idx
-                direction = rc_utils.get_ar_direction(corners[idx])
         TL = corners[index][0][0]
         TR = corners[index][0][1]
         BL = corners[index][0][3]
@@ -258,13 +256,13 @@ def update():
 
         print(id[0], area)
         
-        if id[0] == 32 and area > 7000 and direction is rc_utils.Direction.RIGHT:
+        if id[0] == 32 and area > 1900:
             if cur_state is not State.cone_slaloming:
                 cur_mode = Mode.no_cones
                 counter = 0
             cur_state = State.cone_slaloming
             print("State: ", cur_state)
-        elif cones_done:
+        elif id[0] == 236 and area > 850:
             cur_state = State.wall_parking
             print("State: ", cur_state)
         
@@ -362,6 +360,7 @@ def update():
     print("speed", speed)
     rc.drive.set_speed_angle(0.5, angle)
 
+CROP_TOP_HALF = ((0,0), (rc.camera.get_height() //2, rc.camera.get_width()))
 def find_cones():
     """
     Find the closest red and blue cones and update corresponding global variables.
@@ -387,18 +386,18 @@ def find_cones():
         print("No image found")
         return
 
-    # Search for the red cone
+    # Search for red cone
     contours = rc_utils.find_contours(color_image, ORANGE[0], ORANGE[1])
-    contour = rc_utils.get_largest_contour(contours, MIN_CONTOUR_AREA)
+    contour = rc_utils.get_largest_contour(contours, 30)
 
     if contour is not None:
         red_center = rc_utils.get_contour_center(contour)
         red_distance = rc_utils.get_pixel_average_distance(depth_image, red_center)
 
         # Only use count it if the cone is less than MAX_DISTANCE away
-        if red_distance <= MAX_DISTANCE:
-            rc_utils.draw_contour(color_image, contour, rc_utils.ColorBGR.green.value)
-            rc_utils.draw_circle(color_image, red_center, rc_utils.ColorBGR.green.value)
+        if red_distance <= 250:
+            rc_utils.draw_contour(color_image, contour, rc_utils.ColorBGR.red.value)
+            rc_utils.draw_circle(color_image, red_center, rc_utils.ColorBGR.red.value)
         else:
             red_center = None
             red_distance = 0
@@ -407,18 +406,18 @@ def find_cones():
         red_distance = 0
 
     # Search for the blue cone
-    contours = rc_utils.find_contours(color_image, GREEN[0], GREEN[1])
-    contour = rc_utils.get_largest_contour(contours, MIN_CONTOUR_AREA)
+    contours2 = rc_utils.find_contours(color_image, GREEN[0], GREEN[1])
+    contour2 = rc_utils.get_largest_contour(contours2, 30)
 
-    if contour is not None:
-        blue_center = rc_utils.get_contour_center(contour)
+    if contour2 is not None:
+        blue_center = rc_utils.get_contour_center(contour2)
         blue_distance = rc_utils.get_pixel_average_distance(depth_image, blue_center)
 
         # Only use count it if the cone is less than MAX_DISTANCE away
-        if blue_distance <= MAX_DISTANCE:
-            rc_utils.draw_contour(color_image, contour, rc_utils.ColorBGR.yellow.value)
+        if blue_distance <= 250:
+            rc_utils.draw_contour(color_image, contour2, rc_utils.ColorBGR.blue.value)
             rc_utils.draw_circle(
-                color_image, blue_center, rc_utils.ColorBGR.yellow.value
+                color_image, blue_center, rc_utils.ColorBGR.blue.value
             )
         else:
             blue_center = None
@@ -429,8 +428,6 @@ def find_cones():
 
     rc.display.show_color_image(color_image)
 
-redtimes = 0
-prev_mode = Mode.red_align
 def update_cones():
     """
     After start() is run, this function is run every frame until the back button
@@ -444,8 +441,6 @@ def update_cones():
     global red_center
     global blue_distance
     global blue_center
-    global prev_mode
-    global redtimes
     global cones_done
     global cur_state
 
@@ -455,13 +450,6 @@ def update_cones():
     
     # Align ourselves to smoothly approach and pass the red cone while it is in view
     if cur_mode == Mode.red_align:
-        if prev_mode is not Mode.red_align:
-            prev_mode = Mode.red_align
-            redtimes += 1
-        if redtimes == 1:
-            cones_done = True
-            cur_state = State.wall_parking
-            return
         # Once the red cone is out of view, enter Mode.red_pass
         if (
             red_center is None
@@ -558,10 +546,7 @@ def update_cones():
         # After the counter expires, enter Mode.blue_align if we see the blue cone,
         # and Mode.blue_find if we do not
         if counter <= 0:
-            cones_done = True
-            cur_state = State.wall_parking
-            return
-            #cur_mode = Mode.blue_align if blue_distance > 0 else Mode.blue_find
+            cur_mode = Mode.blue_align if blue_distance > 0 else Mode.blue_find
 
     elif cur_mode == Mode.blue_pass:
         angle = rc_utils.remap_range(counter, 1, 0, 0, 0.5)
