@@ -286,10 +286,13 @@ def update():
             for priority in PRIORITY:
                 if priority == "Y" and yellow is not None:
                     colorContours.append(yellow)
+                    print("yellow")
                 elif priority == "R" and red is not None:
                     colorContours.append(red)
+                    print("red")
                 elif priority == "G" and green is not None:
                     colorContours.append(green)
+                    print("green")
             
             if not colorContours:
                 angle = prevangle
